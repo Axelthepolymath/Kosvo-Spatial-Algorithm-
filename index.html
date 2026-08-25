@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Kosvo Spatial Framework Simulator</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+canvas {
+    border: 2px solid black;
+    margin-top: 20px;
+}
+
+#output {
+    margin-top: 20px;
+    font-size: 18px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>Kosvo Spatial Framework</h1>
+
+<p>
+Click on the coordinate plane to position the observer.
+The system determines Beside, Third Perspective, and Loom activation.
+</p>
+
+<canvas id="space" width="600" height="600"></canvas>
+
+<div id="output">
+Waiting for observer position...
+</div>
+
+
+<script>
+
+const canvas = document.getElementById("space");
+const ctx = canvas.getContext("2d");
+
+const output = document.getElementById("output");
+
+const center = {
+    x: 300,
+    y: 300
+};
+
+let observer = null;
+
+
+// Draw coordinate space
+
+function draw(){
+
+    ctx.clearRect(0,0,600,600);
+
+
+    // Axis
+
+    ctx.beginPath();
+    ctx.moveTo(300,0);
+    ctx.lineTo(300,600);
+    ctx.moveTo(0,300);
+    ctx.lineTo(600,300);
+    ctx.stroke();
+
+
+    // Kosvo center
+
+    ctx.beginPath();
+    ctx.arc(center.x,center.y,10,0,Math.PI*2);
+    ctx.fill();
+
+
+    ctx.fillText("Kosvo",center.x+15,center.y);
+
+
+    if(observer){
+
+        let distance =
+        Math.sqrt(
+            (observer.x-center.x)**2+
+            (observer.y-center.y)**2
+        );
+
+
+        // Draw observer
+
+        ctx.beginPath();
+        ctx.arc(observer.x,observer.y,8,0,Math.PI*2);
+        ctx.fill();
+
+
+        ctx.fillText(
+            "Observer",
+            observer.x+10,
+            observer.y
+        );
+
+
+        let state;
+
+
+        if(distance < 80){
+
+            state =
+            "Beside State: Loom not activated.";
+
+            output.innerHTML =
+            `
+            Distance: ${distance.toFixed(2)}
+            <br>
+            ${state}
+            `;
+
+        }
+
+
+        else{
+
+            let dx =
+            observer.x-center.x;
+
+            let dy =
+            center.y-observer.y;
+
+
+            let direction;
+
+
+            if(Math.abs(dx)>Math.abs(dy)){
+                direction =
+                dx>0 ? "East" : "West";
+            }
+            else{
+                direction =
+                dy>0 ? "North" : "South";
+            }
+
+
+            state =
+            "Third Perspective Activated";
+
+
+            output.innerHTML =
+            `
+            Distance: ${distance.toFixed(2)}
+            <br>
+            ${state}
+            <br>
+            Perspective Direction: ${direction}
+            <br>
+            Loom Rotation Generated
+            `;
+
+
+            drawLoom();
+
+        }
+
+    }
+
+}
+
+
+
+// Loom rotational force
+
+function drawLoom(){
+
+    ctx.beginPath();
+
+    ctx.arc(
+        center.x,
+        center.y,
+        120,
+        0,
+        Math.PI*2
+    );
+
+    ctx.stroke();
+
+
+    for(let i=0;i<12;i++){
+
+        let angle =
+        (Math.PI*2/12)*i;
+
+
+        let x =
+        center.x+
+        120*Math.cos(angle);
+
+
+        let y =
+        center.y+
+        120*Math.sin(angle);
+
+
+        ctx.beginPath();
+        ctx.arc(x,y,5,0,Math.PI*2);
+        ctx.fill();
+
+    }
+
+}
+
+
+
+// Click coordinate
+
+canvas.addEventListener(
+"click",
+function(event){
+
+    const rect =
+    canvas.getBoundingClientRect();
+
+
+    observer = {
+
+        x:event.clientX-rect.left,
+
+        y:event.clientY-rect.top
+
+    };
+
+
+    draw();
+
+});
+
+
+draw();
+
+</script>
+
+</body>
+</html>
